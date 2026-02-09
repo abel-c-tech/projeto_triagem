@@ -1,0 +1,7 @@
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\backend.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\backend.AssemblyInfoInputs.cache
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\backend.AssemblyInfo.cs
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\backend.csproj.CoreCompileInputs.cache
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\backend.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\leona\Downloads\WS\projeto_triagem\backend\obj\Debug\net10.0\backend.sourcelink.json
