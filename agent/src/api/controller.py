@@ -57,7 +57,11 @@ def analisar_curriculo(dados: CurriculoRequest):
     conceitos_base = [
         "python", "java", "javascript", "html", "css",
         "docker", "banco de dados", "computação em nuvem",
-        "engenharia", "análise de dados"
+        "engenharia", "análise de dados", "linguagem de programação",
+        "desenvolvimento backend", "api", "servidor",  "desenvolvimento frontend",
+        "interface do usuário","web", "c#", "c", "javascript","machine learning",
+        "inteligência artificial", "automação","design", "modelagem",
+        "software", "sql", "nosql", "linux", "windows", "git", "ci/cd"
     ]
 
     conceitos_docs = [nlp(c) for c in conceitos_base]
