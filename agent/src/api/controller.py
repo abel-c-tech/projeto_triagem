@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import re
 from config.nlp import get_nlp
+from services.classifier import classificar_perfil
 
 router = APIRouter(prefix="/analisar", tags=["Análise"])
 
@@ -17,15 +18,25 @@ def analisar_curriculo(dados: CurriculoRequest):
     doc = nlp(texto)
 
     # -----------------------------
-    # Nome (NER - Pessoa)
+    # Classificação RF04
+    # -----------------------------
+    perfil, confianca = classificar_perfil(doc, nlp)
+
+    # -----------------------------
+    # Nome (NER + fallback)
     # -----------------------------
     nomes = [
         ent.text for ent in doc.ents
         if ent.label_ == "PER"
     ]
 
+    if not nomes:
+        match = re.search(r"meu nome é ([A-ZÁÉÍÓÚÂÊÔÃÕ][a-záéíóúâêôãõ]+)", texto)
+        if match:
+            nomes.append(match.group(1))
+
     # -----------------------------
-    # Email (Regex)
+    # Email
     # -----------------------------
     emails = re.findall(
         r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+",
@@ -33,7 +44,7 @@ def analisar_curriculo(dados: CurriculoRequest):
     )
 
     # -----------------------------
-    # Telefone (Regex)
+    # Telefone
     # -----------------------------
     telefones = re.findall(
         r"\(?\d{2}\)?\s?\d{4,5}-?\d{4}",
@@ -41,22 +52,31 @@ def analisar_curriculo(dados: CurriculoRequest):
     )
 
     # -----------------------------
-    # Hard Skills
+    # Hard Skills (similaridade semântica)
     # -----------------------------
-    hard_skills_base = [
-        "python", "java", "c#", "sql",
-        "docker", "aws", "linux", "git"
+    conceitos_base = [
+        "python", "java", "javascript", "html", "css",
+        "docker", "banco de dados", "computação em nuvem",
+        "engenharia", "análise de dados"
     ]
 
-    hard_skills = {
-        token.text.lower()
-        for token in doc
-        if token.text.lower() in hard_skills_base
-    }
+    conceitos_docs = [nlp(c) for c in conceitos_base]
+    hard_skills = set()
+
+    for token in doc:
+        if token.is_stop or token.is_punct or not token.has_vector:
+            continue
+
+        for conceito_doc in conceitos_docs:
+            if token.similarity(conceito_doc) >= 0.60:
+                hard_skills.add(token.text.lower())
+                break
 
     return {
         "nomes_detectados": list(set(nomes)),
         "emails": list(set(emails)),
         "telefones": list(set(telefones)),
-        "hard_skills": list(hard_skills)
+        "hard_skills": list(hard_skills),
+        "perfil": perfil,
+        "confianca": confianca
     }
