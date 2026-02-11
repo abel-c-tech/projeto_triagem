@@ -10,7 +10,9 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "10.0.3",
           "Microsoft.EntityFrameworkCore.Sqlite": "10.0.3",
-          "Microsoft.EntityFrameworkCore.Tools": "10.0.3"
+          "Microsoft.EntityFrameworkCore.Tools": "10.0.3",
+          "Swashbuckle.AspNetCore": "10.1.2",
+          "UglyToad.PdfPig": "1.7.0-custom-5"
         },
         "runtime": {
           "backend.dll": {}
@@ -399,6 +401,14 @@
           }
         }
       },
+      "Microsoft.OpenApi/2.4.1": {
+        "runtime": {
+          "lib/net8.0/Microsoft.OpenApi.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          }
+        }
+      },
       "Microsoft.VisualStudio.SolutionPersistence/1.0.52": {
         "runtime": {
           "lib/net8.0/Microsoft.VisualStudio.SolutionPersistence.dll": {
@@ -576,6 +586,43 @@
           }
         }
       },
+      "Swashbuckle.AspNetCore/10.1.2": {
+        "dependencies": {
+          "Swashbuckle.AspNetCore.Swagger": "10.1.2",
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.1.2",
+          "Swashbuckle.AspNetCore.SwaggerUI": "10.1.2"
+        }
+      },
+      "Swashbuckle.AspNetCore.Swagger/10.1.2": {
+        "dependencies": {
+          "Microsoft.OpenApi": "2.4.1"
+        },
+        "runtime": {
+          "lib/net10.0/Swashbuckle.AspNetCore.Swagger.dll": {
+            "assemblyVersion": "10.1.2.0",
+            "fileVersion": "10.1.2.2188"
+          }
+        }
+      },
+      "Swashbuckle.AspNetCore.SwaggerGen/10.1.2": {
+        "dependencies": {
+          "Swashbuckle.AspNetCore.Swagger": "10.1.2"
+        },
+        "runtime": {
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {
+            "assemblyVersion": "10.1.2.0",
+            "fileVersion": "10.1.2.2188"
+          }
+        }
+      },
+      "Swashbuckle.AspNetCore.SwaggerUI/10.1.2": {
+        "runtime": {
+          "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {
+            "assemblyVersion": "10.1.2.0",
+            "fileVersion": "10.1.2.2188"
+          }
+        }
+      },
       "System.CodeDom/6.0.0": {
         "runtime": {
           "lib/net6.0/System.CodeDom.dll": {
@@ -641,6 +688,64 @@
           "lib/net9.0/System.Composition.TypedParts.dll": {
             "assemblyVersion": "9.0.0.0",
             "fileVersion": "9.0.24.52809"
+          }
+        }
+      },
+      "UglyToad.PdfPig/1.7.0-custom-5": {
+        "dependencies": {
+          "UglyToad.PdfPig.Core": "1.7.0-custom-5",
+          "UglyToad.PdfPig.Fonts": "1.7.0-custom-5",
+          "UglyToad.PdfPig.Tokenization": "1.7.0-custom-5",
+          "UglyToad.PdfPig.Tokens": "1.7.0-custom-5"
+        },
+        "runtime": {
+          "lib/net6.0/UglyToad.PdfPig.dll": {
+            "assemblyVersion": "0.1.8.0",
+            "fileVersion": "0.1.8.0"
+          }
+        }
+      },
+      "UglyToad.PdfPig.Core/1.7.0-custom-5": {
+        "runtime": {
+          "lib/net6.0/UglyToad.PdfPig.Core.dll": {
+            "assemblyVersion": "0.1.8.0",
+            "fileVersion": "0.1.8.0"
+          }
+        }
+      },
+      "UglyToad.PdfPig.Fonts/1.7.0-custom-5": {
+        "dependencies": {
+          "UglyToad.PdfPig.Core": "1.7.0-custom-5",
+          "UglyToad.PdfPig.Tokenization": "1.7.0-custom-5",
+          "UglyToad.PdfPig.Tokens": "1.7.0-custom-5"
+        },
+        "runtime": {
+          "lib/net6.0/UglyToad.PdfPig.Fonts.dll": {
+            "assemblyVersion": "0.1.8.0",
+            "fileVersion": "0.1.8.0"
+          }
+        }
+      },
+      "UglyToad.PdfPig.Tokenization/1.7.0-custom-5": {
+        "dependencies": {
+          "UglyToad.PdfPig.Core": "1.7.0-custom-5",
+          "UglyToad.PdfPig.Tokens": "1.7.0-custom-5"
+        },
+        "runtime": {
+          "lib/net6.0/UglyToad.PdfPig.Tokenization.dll": {
+            "assemblyVersion": "0.1.8.0",
+            "fileVersion": "0.1.8.0"
+          }
+        }
+      },
+      "UglyToad.PdfPig.Tokens/1.7.0-custom-5": {
+        "dependencies": {
+          "UglyToad.PdfPig.Core": "1.7.0-custom-5"
+        },
+        "runtime": {
+          "lib/net6.0/UglyToad.PdfPig.Tokens.dll": {
+            "assemblyVersion": "0.1.8.0",
+            "fileVersion": "0.1.8.0"
           }
         }
       }
@@ -764,6 +869,13 @@
       "path": "microsoft.extensions.dependencymodel/10.0.3",
       "hashPath": "microsoft.extensions.dependencymodel.10.0.3.nupkg.sha512"
     },
+    "Microsoft.OpenApi/2.4.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-u7QhXCISMQuab3flasb1hoaiERmUqyWsW7tmQODyILoQ7mJV5IRGM+2KKZYo0QUfC13evEOcHAb6TPWgqEQtrw==",
+      "path": "microsoft.openapi/2.4.1",
+      "hashPath": "microsoft.openapi.2.4.1.nupkg.sha512"
+    },
     "Microsoft.VisualStudio.SolutionPersistence/1.0.52": {
       "type": "package",
       "serviceable": true,
@@ -813,6 +925,34 @@
       "path": "sqlitepclraw.provider.e_sqlite3/2.1.11",
       "hashPath": "sqlitepclraw.provider.e_sqlite3.2.1.11.nupkg.sha512"
     },
+    "Swashbuckle.AspNetCore/10.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-txDJi7w/didFl/kIlTaA+FfzaJvZaXXZMejfxhJRK/CZdG8PrJcW1xquUuyLN0zNTpU5K0mm0U19B0/P5xiNOA==",
+      "path": "swashbuckle.aspnetcore/10.1.2",
+      "hashPath": "swashbuckle.aspnetcore.10.1.2.nupkg.sha512"
+    },
+    "Swashbuckle.AspNetCore.Swagger/10.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CvIeWbEJ+pogj601pptQYzz3poZhS8/mk/vFozRQ74JckT3WWLGX1mFjNwNVdJOERf4Lk/clbFqfRG4WEvDGcw==",
+      "path": "swashbuckle.aspnetcore.swagger/10.1.2",
+      "hashPath": "swashbuckle.aspnetcore.swagger.10.1.2.nupkg.sha512"
+    },
+    "Swashbuckle.AspNetCore.SwaggerGen/10.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/gcOooF1cfmdvYU6wFiPB9On5CMUp2P/jrt2EFEoSG0p0xSALBdWoWy3eNHVmzXUlVHaGAg5PHFC6e8C+tVpWw==",
+      "path": "swashbuckle.aspnetcore.swaggergen/10.1.2",
+      "hashPath": "swashbuckle.aspnetcore.swaggergen.10.1.2.nupkg.sha512"
+    },
+    "Swashbuckle.AspNetCore.SwaggerUI/10.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Zzam+F/g3jpGvSLhqdtOoBe+GEABk+oi9LJxun1wrz52/254sSGWkz1P+U1dDifsXJWVdZusiRuDWLXkJW+7Eg==",
+      "path": "swashbuckle.aspnetcore.swaggerui/10.1.2",
+      "hashPath": "swashbuckle.aspnetcore.swaggerui.10.1.2.nupkg.sha512"
+    },
     "System.CodeDom/6.0.0": {
       "type": "package",
       "serviceable": true,
@@ -861,6 +1001,41 @@
       "sha512": "sha512-aRZlojCCGEHDKqh43jaDgaVpYETsgd7Nx4g1zwLKMtv4iTo0627715ajEFNpEEBTgLmvZuv8K0EVxc3sM4NWJA==",
       "path": "system.composition.typedparts/9.0.0",
       "hashPath": "system.composition.typedparts.9.0.0.nupkg.sha512"
+    },
+    "UglyToad.PdfPig/1.7.0-custom-5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-mddnoBg+XV5YZJg+lp/LlXQ9NY9/oV/MoNjLbbLHw0uTymfyuinVePQB4ff/ELRv3s6n0G7h8q3Ycb3KYg+hgQ==",
+      "path": "uglytoad.pdfpig/1.7.0-custom-5",
+      "hashPath": "uglytoad.pdfpig.1.7.0-custom-5.nupkg.sha512"
+    },
+    "UglyToad.PdfPig.Core/1.7.0-custom-5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bChQUAYApM6/vgBis0+fBTZyAVqjXdqshjZDCgI3dgwUplfLJxXRrnkCOdNj0a6JNcF32R4aLpnGpTc9QmmVmg==",
+      "path": "uglytoad.pdfpig.core/1.7.0-custom-5",
+      "hashPath": "uglytoad.pdfpig.core.1.7.0-custom-5.nupkg.sha512"
+    },
+    "UglyToad.PdfPig.Fonts/1.7.0-custom-5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Z6SBBAIL8wRkJNhXGYaz0CrHnNrNeuNtmwRbBtQUA1b3TDhRQppOmHCIuhjb6Vu/Rirp6FIOtzAU1lXsGik90w==",
+      "path": "uglytoad.pdfpig.fonts/1.7.0-custom-5",
+      "hashPath": "uglytoad.pdfpig.fonts.1.7.0-custom-5.nupkg.sha512"
+    },
+    "UglyToad.PdfPig.Tokenization/1.7.0-custom-5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-U8VVH7VJjv6czP7qWyzDq6CRaiJQe7/sESUCL8H3kiEa3zi0l9TonIKlD/YidQ5DlgTumracii6zjLyKPEFKwA==",
+      "path": "uglytoad.pdfpig.tokenization/1.7.0-custom-5",
+      "hashPath": "uglytoad.pdfpig.tokenization.1.7.0-custom-5.nupkg.sha512"
+    },
+    "UglyToad.PdfPig.Tokens/1.7.0-custom-5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-m/j5RVfL4eF/OwX6ASprzK+yzD3l7xdgQ7zQPgENhjxfuXD+hj6FSeZlmxSTt9ywvWcTCjGKAILl9XTK9iQgCQ==",
+      "path": "uglytoad.pdfpig.tokens/1.7.0-custom-5",
+      "hashPath": "uglytoad.pdfpig.tokens.1.7.0-custom-5.nupkg.sha512"
     }
   }
 }
