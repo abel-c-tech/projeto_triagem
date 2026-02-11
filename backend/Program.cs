@@ -9,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=app.db"));
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -16,7 +18,6 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
 
 // 🔹 Criar candidato
 app.MapPost("/candidatos/texto", async (Person input, AppDbContext db) =>
@@ -33,25 +34,20 @@ app.MapPost("/candidatos/texto", async (Person input, AppDbContext db) =>
     await db.SaveChangesAsync();
 
     return Results.Ok(new { mensagem = "Currículo salvo via texto!" });
-});
+})
+.DisableAntiforgery(); // 🔹 desabilita antiforgery
 
-app.MapPost("/candidatos/upload", async (HttpRequest request, AppDbContext db) =>
+// 🔹 Upload de arquivo TXT
+app.MapPost("/candidatos/upload", async (IFormFile arquivo, AppDbContext db) =>
 {
-    if (!request.HasFormContentType)
-        return Results.BadRequest("Envie como multipart/form-data.");
-
-    var form = await request.ReadFormAsync();
-    var file = form.Files["file"];
-
-    if (file == null || file.Length == 0)
+    if (arquivo == null || arquivo.Length == 0)
         return Results.BadRequest("Arquivo inválido.");
 
-    if (!file.FileName.EndsWith(".txt"))
+    if (!arquivo.FileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
         return Results.BadRequest("Apenas arquivos .txt são permitidos.");
 
     string texto;
-
-    using (var reader = new StreamReader(file.OpenReadStream()))
+    using (var reader = new StreamReader(arquivo.OpenReadStream()))
     {
         texto = await reader.ReadToEndAsync();
     }
@@ -59,19 +55,55 @@ app.MapPost("/candidatos/upload", async (HttpRequest request, AppDbContext db) =
     if (string.IsNullOrWhiteSpace(texto))
         return Results.BadRequest("O arquivo está vazio.");
 
-    var person = new Person
+    var candidato = new Person
     {
-        Nome = "Extraído do TXT",
+        Nome = "Upload TXT",
         CurriculoTexto = Sanitize(texto)
     };
 
-    db.People.Add(person);
+    db.People.Add(candidato);
     await db.SaveChangesAsync();
 
-    return Results.Ok(new { mensagem = "Currículo salvo com sucesso!" });
+    return Results.Ok(new { mensagem = "Currículo salvo com sucesso!", id = candidato.Id });
 })
-.Accepts<IFormFile>("multipart/form-data");
+.DisableAntiforgery(); // 🔹 desabilita antiforgery
 
+// 🔹 Comunicação com o agente Python
+app.MapPost("/candidatos/analisar/{id}", async (
+    int id,
+    AppDbContext db,
+    IHttpClientFactory httpClientFactory
+) =>
+{
+    var candidato = await db.People.FindAsync(id);
+
+    if (candidato == null)
+        return Results.NotFound("Candidato não encontrado.");
+
+    if (string.IsNullOrWhiteSpace(candidato.CurriculoTexto))
+        return Results.BadRequest("Currículo não possui texto para análise.");
+
+    var client = httpClientFactory.CreateClient();
+
+    var payload = new { texto = candidato.CurriculoTexto };
+    var json = System.Text.Json.JsonSerializer.Serialize(payload);
+
+    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+    var response = await client.PostAsync("http://localhost:8000/analisar", content);
+
+    if (!response.IsSuccessStatusCode)
+        return Results.Problem("Erro ao comunicar com o agente.");
+
+    var resultado = await response.Content.ReadAsStringAsync();
+
+    return Results.Ok(new
+    {
+        candidatoId = candidato.Id,
+        analise = System.Text.Json.JsonDocument.Parse(resultado)
+    });
+})
+.DisableAntiforgery(); // 🔹 desabilita antiforgery
 
 // 🔹 Listar todos
 app.MapGet("/candidatos", async (AppDbContext db) =>
@@ -79,8 +111,7 @@ app.MapGet("/candidatos", async (AppDbContext db) =>
     return await db.People.ToListAsync();
 });
 
-
-// 🔹 Filtrar por tecnologia (RF05)
+// 🔹 Filtrar por tecnologia
 app.MapGet("/candidatos/tecnologia/{tec}", async (string tec, AppDbContext db) =>
 {
     var candidatos = await db.People
@@ -90,6 +121,7 @@ app.MapGet("/candidatos/tecnologia/{tec}", async (string tec, AppDbContext db) =
     return candidatos;
 });
 
+// 🔹 Atualizar candidato
 app.MapPut("/candidatos/{id}", async (int id, Person input, AppDbContext db) =>
 {
     var person = await db.People.FindAsync(id);
@@ -105,8 +137,10 @@ app.MapPut("/candidatos/{id}", async (int id, Person input, AppDbContext db) =>
     await db.SaveChangesAsync();
 
     return Results.Ok(person);
-});
+})
+.DisableAntiforgery(); // 🔹 desabilita antiforgery
 
+// 🔹 Deletar candidato
 app.MapDelete("/candidatos/{id}", async (int id, AppDbContext db) =>
 {
     var person = await db.People.FindAsync(id);
@@ -118,7 +152,8 @@ app.MapDelete("/candidatos/{id}", async (int id, AppDbContext db) =>
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-});
+})
+.DisableAntiforgery(); // 🔹 desabilita antiforgery
 
 string Sanitize(string input)
 {
