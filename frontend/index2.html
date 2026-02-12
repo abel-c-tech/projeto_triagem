@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cadastro e Análise de Currículo</title>
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .container { background: #fff; padding: 20px; border-radius: 10px; max-width: 700px; margin: auto; }
+    input, textarea, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { background: #007bff; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .resultado { background: #eee; padding: 10px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Cadastro e Análise de Currículo</h1>
+
+    <label for="texto">Cole seu currículo abaixo:</label>
+    <textarea id="texto" placeholder="Cole aqui o conteúdo do currículo..."></textarea>
+
+    <label for="arquivo">Ou faça upload de um arquivo TXT:</label>
+    <input type="file" id="arquivo" accept=".txt">
+
+    <button id="enviarBtn">Enviar para análise</button>
+
+    <div class="resultado" id="response">
+        <!-- Resultado vai aparecer aqui -->
+    </div>
+</div>
+
+<script>
+const resDisplay = document.getElementById('response');
+
+// 🔹 Restaurar resultado salvo (se houver)
+if(localStorage.getItem('ultimoResultado')) {
+    resDisplay.textContent = localStorage.getItem('ultimoResultado');
+}
+
+document.getElementById("enviarBtn").addEventListener("click", async (event) => {
+    event.preventDefault(); // evita reload
+
+    resDisplay.textContent = "Processando...";
+
+    const textarea = document.getElementById('texto');
+    const arquivo = document.getElementById('arquivo');
+
+    let textoCurriculo = "";
+
+    if (textarea.value.trim()) {
+        textoCurriculo = textarea.value.trim();
+    } else if (arquivo.files.length > 0) {
+        const file = arquivo.files[0];
+        if (!file.name.endsWith(".txt")) {
+            resDisplay.textContent = "Apenas arquivos .txt são permitidos.";
+            return;
+        }
+        try {
+            textoCurriculo = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject("Erro ao ler o arquivo.");
+                reader.readAsText(file, "UTF-8");
+            });
+        } catch (err) {
+            resDisplay.textContent = "Erro ao ler o arquivo.";
+            return;
+        }
+    } else {
+        resDisplay.textContent = "Insira texto ou selecione um arquivo.";
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:5094/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: textoCurriculo
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            resDisplay.textContent = `Erro do backend: ${errorText}`;
+            localStorage.setItem('ultimoResultado', `Erro do backend: ${errorText}`);
+            return;
+        }
+
+        const data = await response.json();
+        const analise = data.analise;
+
+        let resultado = `Candidato ID: ${data.candidatoId}\n`;
+        resultado += `Nome(s): ${analise.nomes_detectados?.join(", ") || "Não encontrado"}\n`;
+        resultado += `Email(s): ${analise.emails?.join(", ") || "Não encontrado"}\n`;
+        resultado += `Telefone(s): ${analise.telefones?.join(", ") || "Não encontrado"}\n`;
+        resultado += `Hard Skills: ${analise.hard_skills?.join(", ") || "Não encontrado"}\n`;
+        resultado += `Perfil: ${analise.perfil}\n`;
+        resultado += `Confiança: ${analise.confianca}\n`;
+
+        resDisplay.textContent = resultado;
+        // 🔹 Salva no localStorage para não sumir
+        localStorage.setItem('ultimoResultado', resultado);
+
+    } catch (err) {
+        console.error(err);
+        resDisplay.textContent = "Erro ao conectar no backend.";
+        localStorage.setItem('ultimoResultado', "Erro ao conectar no backend.");
+    }
+});
+</script>
+</body>
+</html>

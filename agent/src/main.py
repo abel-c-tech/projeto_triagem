@@ -6,7 +6,7 @@ import uvicorn
 # -------------------------------------------------
 # Inicialização do modelo NLP (carrega UMA vez)
 # -------------------------------------------------
-nlp = spacy.load("pt_core_news_sm")
+nlp = spacy.load("pt_core_news_lg")
 
 
 def get_nlp():
@@ -25,6 +25,7 @@ app = FastAPI(
     description="API responsável por extração e classificação de currículos",
     version="1.0.0"
 )
+
 
 app.include_router(router)
 

@@ -66,8 +66,30 @@ x
         <input type="file" id="curriculo" name="curriculo">
 <label for="texto">Ou cole seu currículo abaixo</label>
         <textarea id="texto" name="texto" placeholder="Cole aqui o conteúdo do currículo..."></textarea>
-<button type="submit">Enviar</button>
+<button onclick="sendToBackend()" type="submit">Enviar</button>
     </form>
 </div>
+    <p><strong>Resposta:</strong> <span id="response"></span></p>
+
+    <script>
+        async function sendToBackend() {
+            const text = document.getElementById('texto').value;
+            const resDisplay = document.getElementById('response');
+            
+            resDisplay.innerText = "Processando...";
+
+            try {
+                const response = await fetch('http://localhost:5000/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await response.json();
+                resDisplay.innerText = "enviado ";
+            } catch (err) {
+                resDisplay.innerText = "Erro ao conectar no Backend C#.";
+            }
+        }
+    </script>
 </body>
 </html>

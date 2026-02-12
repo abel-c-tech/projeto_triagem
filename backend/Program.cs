@@ -2,7 +2,6 @@ using backend.Data;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,31 +13,81 @@ builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:5500")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
+
 var app = builder.Build();
+
+app.UseCors("AllowFrontend");
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// 🔹 Criar candidato
-app.MapPost("/candidatos/texto", async (Person input, AppDbContext db) =>
+
+// =====================================================
+// 🔹 ENDPOINT PRINCIPAL: /ask
+// Recebe texto ou upload convertido para texto
+// =====================================================
+app.MapPost("/ask", async (
+    HttpRequest request,
+    AppDbContext db,
+    IHttpClientFactory httpClientFactory
+) =>
 {
-    if (string.IsNullOrWhiteSpace(input.CurriculoTexto))
+    using var reader = new StreamReader(request.Body);
+    var texto = await reader.ReadToEndAsync();
+
+    if (string.IsNullOrWhiteSpace(texto))
         return Results.BadRequest("Texto do currículo é obrigatório.");
 
-    input.Nome = Sanitize(input.Nome);
-    input.Email = Sanitize(input.Email);
-    input.Tecnologia = Sanitize(input.Tecnologia);
-    input.CurriculoTexto = Sanitize(input.CurriculoTexto);
+    var textoLimpo = Sanitize(texto);
 
-    db.People.Add(input);
+    var client = httpClientFactory.CreateClient();
+    var payload = new { texto = textoLimpo };
+    var json = System.Text.Json.JsonSerializer.Serialize(payload);
+    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+    var response = await client.PostAsync("http://localhost:8000/analisar", content);
+
+    if (!response.IsSuccessStatusCode)
+        return Results.Problem("Erro ao comunicar com o agente NLP.");
+
+    var resultado = await response.Content.ReadAsStringAsync();
+    var analiseObj = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(resultado);
+
+    // só salva se análise deu certo
+    var candidato = new Person
+    {
+        Nome = "Frontend",
+        CurriculoTexto = textoLimpo
+    };
+
+    db.People.Add(candidato);
     await db.SaveChangesAsync();
 
-    return Results.Ok(new { mensagem = "Currículo salvo via texto!" });
+    return Results.Ok(new
+    {
+        candidatoId = candidato.Id,
+        analise = analiseObj
+    });
 })
-.DisableAntiforgery(); // 🔹 desabilita antiforgery
+.DisableAntiforgery();
 
-// 🔹 Upload de arquivo TXT
-app.MapPost("/candidatos/upload", async (IFormFile arquivo, AppDbContext db) =>
+
+// =====================================================
+// 🔹 UPLOAD DE ARQUIVO
+// Agora chama o agente igual ao /ask
+// =====================================================
+app.MapPost("/candidatos/upload", async (IFormFile arquivo, AppDbContext db, IHttpClientFactory httpClientFactory) =>
 {
     if (arquivo == null || arquivo.Length == 0)
         return Results.BadRequest("Arquivo inválido.");
@@ -48,113 +97,71 @@ app.MapPost("/candidatos/upload", async (IFormFile arquivo, AppDbContext db) =>
 
     string texto;
     using (var reader = new StreamReader(arquivo.OpenReadStream()))
-    {
         texto = await reader.ReadToEndAsync();
-    }
 
     if (string.IsNullOrWhiteSpace(texto))
         return Results.BadRequest("O arquivo está vazio.");
 
+    var textoLimpo = Sanitize(texto);
+
+    // Salva candidato
     var candidato = new Person
     {
         Nome = "Upload TXT",
-        CurriculoTexto = Sanitize(texto)
+        CurriculoTexto = textoLimpo
     };
-
     db.People.Add(candidato);
     await db.SaveChangesAsync();
 
-    return Results.Ok(new { mensagem = "Currículo salvo com sucesso!", id = candidato.Id });
-})
-.DisableAntiforgery(); // 🔹 desabilita antiforgery
-
-// 🔹 Comunicação com o agente Python
-app.MapPost("/candidatos/analisar/{id}", async (
-    int id,
-    AppDbContext db,
-    IHttpClientFactory httpClientFactory
-) =>
-{
-    var candidato = await db.People.FindAsync(id);
-
-    if (candidato == null)
-        return Results.NotFound("Candidato não encontrado.");
-
-    if (string.IsNullOrWhiteSpace(candidato.CurriculoTexto))
-        return Results.BadRequest("Currículo não possui texto para análise.");
-
+    // Chama agente Python
     var client = httpClientFactory.CreateClient();
-
-    var payload = new { texto = candidato.CurriculoTexto };
+    var payload = new { texto = textoLimpo };
     var json = System.Text.Json.JsonSerializer.Serialize(payload);
-
     var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
     var response = await client.PostAsync("http://localhost:8000/analisar", content);
-
     if (!response.IsSuccessStatusCode)
-        return Results.Problem("Erro ao comunicar com o agente.");
+        return Results.Problem("Erro ao comunicar com o agente NLP.");
 
     var resultado = await response.Content.ReadAsStringAsync();
+    var analiseObj = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(resultado);
 
     return Results.Ok(new
     {
         candidatoId = candidato.Id,
-        analise = System.Text.Json.JsonDocument.Parse(resultado)
+        analise = analiseObj
     });
 })
-.DisableAntiforgery(); // 🔹 desabilita antiforgery
+.DisableAntiforgery();
 
-// 🔹 Listar todos
+
+// =====================================================
+// 🔹 Listar candidatos
+// =====================================================
 app.MapGet("/candidatos", async (AppDbContext db) =>
 {
     return await db.People.ToListAsync();
 });
 
-// 🔹 Filtrar por tecnologia
-app.MapGet("/candidatos/tecnologia/{tec}", async (string tec, AppDbContext db) =>
-{
-    var candidatos = await db.People
-        .Where(p => p.Tecnologia.ToLower().Contains(tec.ToLower()))
-        .ToListAsync();
-
-    return candidatos;
-});
-
-// 🔹 Atualizar candidato
-app.MapPut("/candidatos/{id}", async (int id, Person input, AppDbContext db) =>
-{
-    var person = await db.People.FindAsync(id);
-
-    if (person == null)
-        return Results.NotFound();
-
-    person.Nome = Sanitize(input.Nome);
-    person.Email = Sanitize(input.Email);
-    person.Tecnologia = Sanitize(input.Tecnologia);
-    person.CurriculoTexto = Sanitize(input.CurriculoTexto);
-
-    await db.SaveChangesAsync();
-
-    return Results.Ok(person);
-})
-.DisableAntiforgery(); // 🔹 desabilita antiforgery
-
+// =====================================================
 // 🔹 Deletar candidato
+// =====================================================
 app.MapDelete("/candidatos/{id}", async (int id, AppDbContext db) =>
 {
     var person = await db.People.FindAsync(id);
-
-    if (person == null)
-        return Results.NotFound();
+    if (person == null) return Results.NotFound();
 
     db.People.Remove(person);
     await db.SaveChangesAsync();
 
     return Results.NoContent();
 })
-.DisableAntiforgery(); // 🔹 desabilita antiforgery
+.DisableAntiforgery();
 
+
+// =====================================================
+// 🔧 Utils
+// =====================================================
 string Sanitize(string input)
 {
     if (string.IsNullOrEmpty(input))
@@ -164,3 +171,4 @@ string Sanitize(string input)
 }
 
 app.Run();
+record AskRequest(string CurriculoTexto);
