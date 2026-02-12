@@ -3112,26 +3112,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\proje\\.nuget\\packages\\": {}
+    "C:\\Users\\jvss6\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Visual studio code\\C# e python\\projeto_triagem\\backend\\backend.csproj",
+      "projectUniqueName": "D:\\visual studio code\\C#_python\\projeto_triagem\\backend\\backend.csproj",
       "projectName": "backend",
-      "projectPath": "C:\\Visual studio code\\C# e python\\projeto_triagem\\backend\\backend.csproj",
-      "packagesPath": "C:\\Users\\proje\\.nuget\\packages\\",
-      "outputPath": "C:\\Visual studio code\\C# e python\\projeto_triagem\\backend\\obj\\",
+      "projectPath": "D:\\visual studio code\\C#_python\\projeto_triagem\\backend\\backend.csproj",
+      "packagesPath": "C:\\Users\\jvss6\\.nuget\\packages\\",
+      "outputPath": "D:\\visual studio code\\C#_python\\projeto_triagem\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\proje\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\jvss6\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

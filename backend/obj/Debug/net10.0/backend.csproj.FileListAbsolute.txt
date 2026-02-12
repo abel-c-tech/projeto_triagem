@@ -1,5 +1,3 @@
-D:\visual studio code\C#_python\projeto_triagem\backend\bin\Debug\net10.0\appsettings.Development.json
-D:\visual studio code\C#_python\projeto_triagem\backend\bin\Debug\net10.0\appsettings.json
 D:\visual studio code\C#_python\projeto_triagem\backend\bin\Debug\net10.0\backend.staticwebassets.endpoints.json
 D:\visual studio code\C#_python\projeto_triagem\backend\bin\Debug\net10.0\backend.exe
 D:\visual studio code\C#_python\projeto_triagem\backend\bin\Debug\net10.0\backend.deps.json
