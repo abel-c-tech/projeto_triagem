@@ -1,15 +1,20 @@
 using backend.Data;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+
 using System.Text.RegularExpressions;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Banco de dados
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=app.db"));
 
+// HttpClient para falar com o agente Python
 builder.Services.AddHttpClient();
 
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -32,7 +37,6 @@ app.UseCors("AllowFrontend");
 app.UseSwagger();
 app.UseSwaggerUI();
 
-
 // =====================================================
 // 🔹 ENDPOINT PRINCIPAL: /ask
 // Recebe texto ou upload convertido para texto
@@ -42,6 +46,7 @@ app.MapPost("/ask", async (
     AppDbContext db,
     IHttpClientFactory httpClientFactory
 ) =>
+
 {
     using var reader = new StreamReader(request.Body);
     var texto = await reader.ReadToEndAsync();
@@ -49,7 +54,9 @@ app.MapPost("/ask", async (
     if (string.IsNullOrWhiteSpace(texto))
         return Results.BadRequest("Texto do currículo é obrigatório.");
 
+
     var textoLimpo = Sanitize(texto);
+
 
     var client = httpClientFactory.CreateClient();
     var payload = new { texto = textoLimpo };
@@ -82,7 +89,6 @@ app.MapPost("/ask", async (
 })
 .DisableAntiforgery();
 
-
 // =====================================================
 // 🔹 UPLOAD DE ARQUIVO
 // Agora chama o agente igual ao /ask
@@ -108,7 +114,9 @@ app.MapPost("/candidatos/upload", async (IFormFile arquivo, AppDbContext db, IHt
     var candidato = new Person
     {
         Nome = "Upload TXT",
+
         CurriculoTexto = textoLimpo
+
     };
     db.People.Add(candidato);
     await db.SaveChangesAsync();
@@ -122,6 +130,7 @@ app.MapPost("/candidatos/upload", async (IFormFile arquivo, AppDbContext db, IHt
     var response = await client.PostAsync("http://localhost:8000/analisar", content);
     if (!response.IsSuccessStatusCode)
         return Results.Problem("Erro ao comunicar com o agente NLP.");
+
 
     var resultado = await response.Content.ReadAsStringAsync();
     var analiseObj = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(resultado);
@@ -169,6 +178,7 @@ string Sanitize(string input)
 
     return Regex.Replace(input, @"<.*?>|[^\w\s@.\-]", string.Empty);
 }
+
 
 app.Run();
 record AskRequest(string CurriculoTexto);
